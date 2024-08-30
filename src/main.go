@@ -8,16 +8,14 @@ import (
 
 const port = 8080
 
-type app struct {
-	Domain string
-}
-
 func main() {
-	var app app
+	var app App
 
 	app.Domain = "http://localhost:8080"
 
 	fmt.Printf("Starting server on %s\n", app.Domain)
+
+	app.registerRoutes()
 
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 	if err != nil {
