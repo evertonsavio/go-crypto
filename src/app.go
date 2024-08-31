@@ -1,8 +1,8 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
+	"go-finder/src/repository"
 	"log"
 	"net/http"
 )
@@ -17,7 +17,7 @@ App struct represents the application
 type App struct {
 	Domain string
 	DSN    string
-	DB     *sql.DB
+	DB     repository.Repository
 }
 
 func (app *App) start() error {
@@ -44,6 +44,7 @@ func (app *App) enableCORS(h http.Handler) http.Handler {
 func (app *App) registerRoutes() {
 	http.Handle("/", app.enableCORS(http.HandlerFunc(app.GET(Home))))
 	http.Handle("/serial", app.enableCORS(http.HandlerFunc(Serial)))
+	http.Handle("/user", app.enableCORS(http.HandlerFunc(app.User)))
 }
 
 func (app *App) GET(f func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc {

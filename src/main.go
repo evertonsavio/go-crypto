@@ -1,6 +1,9 @@
 package main
 
-import "flag"
+import (
+	"flag"
+	dbrepo "go-finder/src/repository/db_repo"
+)
 
 func main() {
 	var app App
@@ -13,8 +16,8 @@ func main() {
 
 	conn, err := app.connectToDB()
 	app.handleFatalError("Could not connect to database", err)
-	app.DB = conn
-	defer app.DB.Close()
+	app.DB = &dbrepo.PostgresDBRepo{DB: conn}
+	defer app.DB.Connection().Close()
 
 	err = app.start()
 	app.handleFatalError("Could not start server", err)
