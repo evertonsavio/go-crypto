@@ -14,6 +14,7 @@ func main() {
 	conn, err := app.connectToDB()
 	app.handleFatalError("Could not connect to database", err)
 	app.DB = conn
+	defer app.DB.Close()
 
 	err = app.start()
 	app.handleFatalError("Could not start server", err)
