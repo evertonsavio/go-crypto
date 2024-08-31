@@ -1,14 +1,6 @@
 package main
 
-import (
-	"log"
-)
-
-func handleError(errorMessage string, err error) {
-	if err != nil {
-		log.Fatalf("%s: %s", errorMessage, err)
-	}
-}
+import "flag"
 
 func main() {
 	var app App
@@ -16,6 +8,13 @@ func main() {
 	app.Domain = "http://localhost"
 	app.registerRoutes()
 
-	err := app.start()
-	handleError("Could not start server", err)
+	flag.StringVar(&app.DSN, "dsn", "host=localhost port=5432 user=postgres password=postgres dbname=finder sslmode=disable timezone=UTC connect_timeout=5", "Postgres connection string")
+	flag.Parse()
+
+	conn, err := app.connectToDB()
+	app.handleFatalError("Could not connect to database", err)
+	app.DB = conn
+
+	err = app.start()
+	app.handleFatalError("Could not start server", err)
 }

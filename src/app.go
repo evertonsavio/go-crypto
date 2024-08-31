@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,8 +9,15 @@ import (
 
 const port = 8080
 
+/*
+App struct represents the application
+@Domain: Domain name
+@DSN: Data Source Name
+*/
 type App struct {
 	Domain string
+	DSN    string
+	DB     *sql.DB
 }
 
 func (app *App) start() error {
@@ -20,7 +28,7 @@ func (app *App) start() error {
 // CORS
 func (app *App) enableCORS(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://*")
+		w.Header().Set("Access-Control-Allow-Origin", "http://locahost:3000")
 
 		if r.Method == "OPTIONS" {
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -34,6 +42,22 @@ func (app *App) enableCORS(h http.Handler) http.Handler {
 }
 
 func (app *App) registerRoutes() {
-	http.Handle("/", app.enableCORS(http.HandlerFunc(Home)))
+	http.Handle("/", app.enableCORS(http.HandlerFunc(app.GET(Home))))
 	http.Handle("/serial", app.enableCORS(http.HandlerFunc(Serial)))
+}
+
+func (app *App) GET(f func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+			return
+		}
+		f(w, r)
+	}
+}
+
+func (app *App) handleFatalError(errorMessage string, err error) {
+	if err != nil {
+		log.Fatalf("%s: %s", errorMessage, err)
+	}
 }
