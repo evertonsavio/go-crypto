@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"go-finder/src/models"
 	"net/http"
 )
 
@@ -23,6 +24,37 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	}
 
 	jsonResponse, err := json.Marshal(payload)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonResponse)
+}
+
+func Serial(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var serialData []models.SerialData
+
+	data := models.SerialData{
+		ID:        "1",
+		Timestamp: "2020-01-01T12:00:00Z",
+		Type:      "BLE",
+		Rssi:      -50,
+		Snr:       10,
+		Mac:       "00:11:22:33:44:55",
+		Message:   "Hello, World!",
+	}
+
+	serialData = append(serialData, data)
+
+	jsonResponse, err := json.Marshal(serialData)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
