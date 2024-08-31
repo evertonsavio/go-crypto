@@ -2,7 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"go-finder/src/models/user"
+	"go-finder/src/main/models/user"
 )
 
 type Repository interface {

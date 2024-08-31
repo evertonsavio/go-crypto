@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"go-finder/src/repository/dbrepo"
+	"go-finder/src/main/repository/dbrepo"
 )
 
 func main() {

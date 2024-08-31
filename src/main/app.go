@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"go-finder/src/repository"
+	"go-finder/src/main/repository"
 	"log"
 	"net/http"
 )

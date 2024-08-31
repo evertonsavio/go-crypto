@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"go-finder/src/models"
-	"go-finder/src/utils"
+	"go-finder/src/main/models"
+	"go-finder/src/main/utils"
 	"net/http"
 )
 

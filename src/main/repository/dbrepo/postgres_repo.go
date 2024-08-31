@@ -3,7 +3,7 @@ package dbrepo
 import (
 	"context"
 	"database/sql"
-	"go-finder/src/models/user"
+	"go-finder/src/main/models/user"
 	"time"
 )
 
