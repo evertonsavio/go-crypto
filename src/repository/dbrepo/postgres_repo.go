@@ -3,7 +3,7 @@ package dbrepo
 import (
 	"context"
 	"database/sql"
-	models "go-finder/src/models/user"
+	"go-finder/src/models/user"
 	"time"
 )
 
@@ -17,7 +17,7 @@ func (m *PostgresDBRepo) Connection() *sql.DB {
 	return m.DB
 }
 
-func (m *PostgresDBRepo) AllUsers() ([]*models.User, error) {
+func (m *PostgresDBRepo) AllUsers() ([]*user.User, error) {
 	// If the interaction with the database takes more than 3 seconds, the context will be canceled
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
@@ -37,9 +37,9 @@ func (m *PostgresDBRepo) AllUsers() ([]*models.User, error) {
 	}
 	defer rows.Close()
 
-	var users []*models.User
+	var users []*user.User
 	for rows.Next() {
-		user := new(models.User)
+		user := new(user.User)
 		err := rows.Scan(
 			&user.ID,
 			&user.Username,
