@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"go-finder/src/models"
+	"go-finder/src/utils"
 	"net/http"
 )
 
@@ -54,15 +55,8 @@ func Serial(w http.ResponseWriter, r *http.Request) {
 
 	serialData = append(serialData, data)
 
-	jsonResponse, err := json.Marshal(serialData)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonResponse)
+	response := utils.JSONResponse{}
+	_ = response.WriteJSON(w, http.StatusOK, serialData)
 }
 
 func (app *App) User(w http.ResponseWriter, r *http.Request) {
@@ -70,20 +64,13 @@ func (app *App) User(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
 	}
+	response := utils.JSONResponse{}
 
 	users, err := app.DB.AllUsers()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		_ = response.ErrorJson(w, err, http.StatusBadRequest)
 		return
 	}
 
-	jsonResponse, err := json.Marshal(users)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonResponse)
+	_ = response.WriteJSON(w, http.StatusOK, users)
 }
