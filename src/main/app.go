@@ -30,6 +30,23 @@ func (app *App) start() error {
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 }
 
+func (app *App) registerRoutes() {
+	http.Handle("/", app.enableCORS(app.AuthRequired(http.HandlerFunc(app.GET(Home)))))
+	http.Handle("/serial", app.enableCORS(http.HandlerFunc(Serial)))
+	http.Handle("/user", app.enableCORS(http.HandlerFunc(app.User)))
+	http.Handle("/login", app.enableCORS(http.HandlerFunc(app.Authenticate)))
+	http.Handle("/refresh", app.enableCORS(http.HandlerFunc(app.Refresh)))
+	http.Handle("/logout", app.enableCORS(http.HandlerFunc(app.Logout)))
+}
+
+func (app *App) handleFatalError(errorMessage string, err error) {
+	if err != nil {
+		log.Fatalf("%s: %s", errorMessage, err)
+	}
+}
+
+// MIDDLEWARES
+
 // CORS
 func (app *App) enableCORS(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -46,15 +63,7 @@ func (app *App) enableCORS(h http.Handler) http.Handler {
 	})
 }
 
-func (app *App) registerRoutes() {
-	http.Handle("/", app.enableCORS(http.HandlerFunc(app.GET(Home))))
-	http.Handle("/serial", app.enableCORS(http.HandlerFunc(Serial)))
-	http.Handle("/user", app.enableCORS(http.HandlerFunc(app.User)))
-	http.Handle("/login", app.enableCORS(http.HandlerFunc(app.Authenticate)))
-	http.Handle("/refresh", app.enableCORS(http.HandlerFunc(app.Refresh)))
-	http.Handle("/logout", app.enableCORS(http.HandlerFunc(app.Logout)))
-}
-
+// GET
 func (app *App) GET(f func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -65,8 +74,15 @@ func (app *App) GET(f func(w http.ResponseWriter, r *http.Request)) http.Handler
 	}
 }
 
-func (app *App) handleFatalError(errorMessage string, err error) {
-	if err != nil {
-		log.Fatalf("%s: %s", errorMessage, err)
-	}
+// AUTH
+func (app *App) AuthRequired(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _, err := app.auth.GetTokenFromHeaderAndVerify(w, r)
+		if err != nil {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		// Call the next request handler
+		next.ServeHTTP(w, r)
+	})
 }
