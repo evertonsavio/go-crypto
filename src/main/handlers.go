@@ -179,3 +179,9 @@ func (app *App) Refresh(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+
+// logout
+func (app *App) Logout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, app.auth.GetExpiredRefreshCookie())
+	w.WriteHeader(http.StatusAccepted)
+}
