@@ -44,11 +44,6 @@ func (u *User) SetUpdatedAt() {
 }
 
 func (u *User) CheckPassword(password string) (bool, error) {
-	pass, erro := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if erro != nil {
-		return false, erro
-	}
-	println(string(pass))
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 	if err != nil {
 		switch {
@@ -58,5 +53,6 @@ func (u *User) CheckPassword(password string) (bool, error) {
 			return false, err
 		}
 	}
+
 	return true, nil
 }

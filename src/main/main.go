@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	var app App
+	app := App{}
 
 	app.registerRoutes()
 

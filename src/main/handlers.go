@@ -1,12 +1,15 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"go-finder/src/main/models"
 	"go-finder/src/main/utils"
-	"log"
 	"net/http"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func Home(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +80,7 @@ func (app *App) User(w http.ResponseWriter, r *http.Request) {
 	_ = response.WriteJSON(w, http.StatusOK, users)
 }
 
-func (app *App) Login(w http.ResponseWriter, r *http.Request) {
+func (app *App) Authenticate(w http.ResponseWriter, r *http.Request) {
 
 	var requestPayload struct {
 		Email    string `json:"email"`
@@ -117,10 +120,62 @@ func (app *App) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Access Token: %s", tokenPair.AccessToken)
 	refreshCookie := app.auth.GetRefreshCookie(tokenPair.RefreshToken)
-	log.Printf("Refresh Cookie: %s", refreshCookie.String())
 	http.SetCookie(w, refreshCookie)
 
 	jsonResponse.WriteJSON(w, http.StatusAccepted, tokenPair)
+}
+
+// Refresh token
+func (app *App) Refresh(w http.ResponseWriter, r *http.Request) {
+	for _, cookie := range r.Cookies() {
+		if cookie.Name == app.auth.CookieName {
+			claims := &Claims{}
+			refreshtoken := cookie.Value
+
+			var jsonResponse utils.JSONResponse
+
+			_, err := jwt.ParseWithClaims(refreshtoken, claims, func(token *jwt.Token) (interface{}, error) {
+				return []byte(app.auth.Secret), nil
+			})
+			if err != nil {
+				jsonResponse.ErrorJson(w, errors.New("unauthorized"), http.StatusBadRequest)
+				return
+			}
+
+			//userId, err := strconv.Atoi(claims.Subject)
+			subject := claims.Subject
+			dst := make([]byte, base64.StdEncoding.DecodedLen(len(subject)))
+			n, err := base64.StdEncoding.Decode(dst, []byte(subject))
+			if err != nil {
+				fmt.Println("decode error:", err)
+				return
+			}
+			// [:n] is used to trim the extra 0 bytes from the decoded slice
+			userEmail := string(dst[:n])
+
+			user, err := app.DB.GetUserByEmail(userEmail)
+			if err != nil {
+				jsonResponse.ErrorJson(w, errors.New("unknown user"), http.StatusBadRequest)
+				return
+			}
+
+			u := jwtUser{
+				ID:        user.ID,
+				Username:  user.Username,
+				FirstName: user.FirstName,
+				LastName:  user.LastName,
+				Email:     user.Email,
+				Role:      user.Role,
+			}
+
+			tokenPair, err := app.auth.GenerateTokenPair(&u)
+			if err != nil {
+				jsonResponse.ErrorJson(w, errors.New("error generating tokens"), http.StatusInternalServerError)
+				return
+			}
+
+			jsonResponse.WriteJSON(w, http.StatusOK, tokenPair)
+		}
+	}
 }

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"encoding/base64"
 	"net/http"
 	"time"
 
@@ -35,17 +35,22 @@ type TokenPairs struct {
 
 type Claims struct {
 	jwt.RegisteredClaims
+	Role  string `json:"rol,omitempty"`
+	Email string `json:"ema,omitempty"`
 }
 
 func (auth *Auth) GenerateTokenPair(user *jwtUser) (*TokenPairs, error) {
 	// Create a token
 	access_token := jwt.New(jwt.SigningMethodHS256)
 
+	data := []byte(user.Email)
+	dst := make([]byte, base64.StdEncoding.EncodedLen(len(data)))
+	base64.StdEncoding.Encode(dst, data)
+	subject := string(dst)
+
 	// Set the claims
 	claims := access_token.Claims.(jwt.MapClaims)
-	claims["nam"] = fmt.Sprintf("%s %s", user.FirstName, user.LastName)
-	claims["ema"] = user.Email
-	claims["sub"] = fmt.Sprint(user.ID)
+	claims["sub"] = subject //fmt.Sprint(user.ID)
 	claims["aud"] = auth.Audience
 	claims["iss"] = auth.Issuer
 	claims["iat"] = time.Now().Unix()
@@ -64,7 +69,7 @@ func (auth *Auth) GenerateTokenPair(user *jwtUser) (*TokenPairs, error) {
 	refreshTokenClaims := refresh_token.Claims.(jwt.MapClaims)
 
 	// Set the claims
-	refreshTokenClaims["sub"] = fmt.Sprint(user.ID)
+	refreshTokenClaims["sub"] = subject //fmt.Sprint(user.ID)
 	refreshTokenClaims["iat"] = time.Now().Unix()
 
 	// Set the expiry/

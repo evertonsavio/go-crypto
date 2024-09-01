@@ -50,7 +50,8 @@ func (app *App) registerRoutes() {
 	http.Handle("/", app.enableCORS(http.HandlerFunc(app.GET(Home))))
 	http.Handle("/serial", app.enableCORS(http.HandlerFunc(Serial)))
 	http.Handle("/user", app.enableCORS(http.HandlerFunc(app.User)))
-	http.Handle("/login", app.enableCORS(http.HandlerFunc(app.Login)))
+	http.Handle("/login", app.enableCORS(http.HandlerFunc(app.Authenticate)))
+	http.Handle("/refresh", app.enableCORS(http.HandlerFunc(app.Refresh)))
 }
 
 func (app *App) GET(f func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
