@@ -15,9 +15,14 @@ App struct represents the application
 @DSN: Data Source Name
 */
 type App struct {
-	Domain string
-	DSN    string
-	DB     repository.Repository
+	Domain       string
+	DSN          string
+	DB           repository.Repository
+	auth         Auth
+	JWTSecret    string
+	JWTIssuer    string
+	JWTAudience  string
+	CookieDomain string
 }
 
 func (app *App) start() error {
@@ -45,6 +50,7 @@ func (app *App) registerRoutes() {
 	http.Handle("/", app.enableCORS(http.HandlerFunc(app.GET(Home))))
 	http.Handle("/serial", app.enableCORS(http.HandlerFunc(Serial)))
 	http.Handle("/user", app.enableCORS(http.HandlerFunc(app.User)))
+	http.Handle("/login", app.enableCORS(http.HandlerFunc(app.Login)))
 }
 
 func (app *App) GET(f func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc {

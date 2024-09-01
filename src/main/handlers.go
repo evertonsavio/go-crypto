@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"go-finder/src/main/models"
 	"go-finder/src/main/utils"
+	"log"
 	"net/http"
 )
 
@@ -73,4 +74,29 @@ func (app *App) User(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_ = response.WriteJSON(w, http.StatusOK, users)
+}
+
+func (app *App) Login(w http.ResponseWriter, r *http.Request) {
+
+	u := jwtUser{
+		ID:        1,
+		Username:  "johndoe",
+		FirstName: "John",
+		LastName:  "Doe",
+		Email:     "john.doe@example.com",
+		Role:      "USER",
+	}
+
+	tokenPair, err := app.auth.GenerateTokenPair(&u)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("Access Token: %s", tokenPair.AccessToken)
+	refreshCookie := app.auth.GetRefreshCookie(tokenPair.RefreshToken)
+	log.Printf("Refresh Cookie: %s", refreshCookie.String())
+	http.SetCookie(w, refreshCookie)
+
+	w.Write([]byte(tokenPair.AccessToken))
 }
