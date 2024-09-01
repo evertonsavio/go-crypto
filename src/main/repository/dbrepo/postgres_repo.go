@@ -57,3 +57,34 @@ func (m *PostgresDBRepo) AllUsers() ([]*user.User, error) {
 
 	return users, nil
 }
+
+func (m *PostgresDBRepo) GetUserByEmail(email string) (*user.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	query := `
+		SELECT
+			id, username, email, password, 
+			first_name, last_name, role
+		FROM users
+		WHERE email = $1
+	`
+
+	row := m.DB.QueryRowContext(ctx, query, email)
+
+	user := new(user.User)
+	err := row.Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.Password,
+		&user.FirstName,
+		&user.LastName,
+		&user.Role,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}

@@ -8,4 +8,5 @@ import (
 type Repository interface {
 	Connection() *sql.DB
 	AllUsers() ([]*user.User, error)
+	GetUserByEmail(email string) (*user.User, error)
 }

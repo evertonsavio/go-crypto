@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"go-finder/src/main/models"
 	"go-finder/src/main/utils"
 	"log"
@@ -78,13 +79,36 @@ func (app *App) User(w http.ResponseWriter, r *http.Request) {
 
 func (app *App) Login(w http.ResponseWriter, r *http.Request) {
 
+	var requestPayload struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	var jsonResponse utils.JSONResponse
+	err := jsonResponse.ReadJson(w, r, &requestPayload)
+	if err != nil {
+		jsonResponse.ErrorJson(w, err, http.StatusBadRequest)
+		return
+	}
+
+	user, err := app.DB.GetUserByEmail(requestPayload.Email)
+	if err != nil {
+		jsonResponse.ErrorJson(w, errors.New("invalid credentials"), http.StatusBadRequest)
+		return
+	}
+	valid, err := user.CheckPassword(requestPayload.Password)
+	if err != nil || !valid {
+		jsonResponse.ErrorJson(w, errors.New("invalid credentials"), http.StatusBadRequest)
+		return
+	}
+
 	u := jwtUser{
-		ID:        1,
-		Username:  "johndoe",
-		FirstName: "John",
-		LastName:  "Doe",
-		Email:     "john.doe@example.com",
-		Role:      "USER",
+		ID:        user.ID,
+		Username:  user.Username,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		Role:      user.Role,
 	}
 
 	tokenPair, err := app.auth.GenerateTokenPair(&u)
@@ -98,5 +122,5 @@ func (app *App) Login(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Refresh Cookie: %s", refreshCookie.String())
 	http.SetCookie(w, refreshCookie)
 
-	w.Write([]byte(tokenPair.AccessToken))
+	jsonResponse.WriteJSON(w, http.StatusAccepted, tokenPair)
 }
