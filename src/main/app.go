@@ -31,10 +31,10 @@ func (app *App) start() error {
 }
 
 func (app *App) registerRoutes() {
-	http.Handle("/", app.enableCORS(app.AuthRequired(http.HandlerFunc(app.GET(Home)))))
+	http.Handle("/", app.enableCORS(app.AuthRequired(app.GET(http.HandlerFunc(Home)))))
 	http.Handle("/serial", app.enableCORS(http.HandlerFunc(Serial)))
 	http.Handle("/user", app.enableCORS(http.HandlerFunc(app.User)))
-	http.Handle("/login", app.enableCORS(http.HandlerFunc(app.Authenticate)))
+	http.Handle("/login", app.enableCORS(app.POST(http.HandlerFunc(app.Authenticate))))
 	http.Handle("/refresh", app.enableCORS(http.HandlerFunc(app.Refresh)))
 	http.Handle("/logout", app.enableCORS(http.HandlerFunc(app.Logout)))
 }
@@ -72,6 +72,17 @@ func (app *App) GET(f func(w http.ResponseWriter, r *http.Request)) http.Handler
 		}
 		f(w, r)
 	}
+}
+
+// POST
+func (app *App) POST(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+			return
+		}
+		h.ServeHTTP(w, r)
+	})
 }
 
 // AUTH
