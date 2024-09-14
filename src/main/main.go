@@ -13,8 +13,8 @@ func main() {
 
 	flag.StringVar(&app.DSN, "dsn", "host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable timezone=UTC connect_timeout=5", "Postgres connection string")
 	flag.StringVar(&app.JWTSecret, "jwt-secret", "secret", "JWT secret")
-	flag.StringVar(&app.JWTIssuer, "jwt-issuer", "finder", "JWT issuer")
-	flag.StringVar(&app.JWTAudience, "jwt-audience", "finder", "JWT audience")
+	flag.StringVar(&app.JWTIssuer, "jwt-issuer", "who-creates-the-token.com", "JWT issuer")
+	flag.StringVar(&app.JWTAudience, "jwt-audience", "service-who-consumes-the-token.com", "JWT audience")
 	flag.StringVar(&app.CookieDomain, "cookie-domain", "localhost", "Cookie domain")
 	flag.StringVar(&app.Domain, "domain", "localhost", "Domain name")
 	flag.Parse()
