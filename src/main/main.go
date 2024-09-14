@@ -11,7 +11,7 @@ func main() {
 
 	app.registerRoutes()
 
-	flag.StringVar(&app.DSN, "dsn", "host=localhost port=5432 user=postgres password=postgres dbname=finder sslmode=disable timezone=UTC connect_timeout=5", "Postgres connection string")
+	flag.StringVar(&app.DSN, "dsn", "host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable timezone=UTC connect_timeout=5", "Postgres connection string")
 	flag.StringVar(&app.JWTSecret, "jwt-secret", "secret", "JWT secret")
 	flag.StringVar(&app.JWTIssuer, "jwt-issuer", "finder", "JWT issuer")
 	flag.StringVar(&app.JWTAudience, "jwt-audience", "finder", "JWT audience")
