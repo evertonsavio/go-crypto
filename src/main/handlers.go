@@ -34,7 +34,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		Version string `json:"version"`
 	}{
 		Status:  "success",
-		Message: "Welcome to the Go Finder API",
+		Message: "Welcome to GOLANG Server API",
 		Version: "1.0.0",
 	}
 
@@ -60,11 +60,9 @@ func Serial(w http.ResponseWriter, r *http.Request) {
 	data := models.SerialData{
 		ID:        "1",
 		Timestamp: "2020-01-01T12:00:00Z",
-		Type:      "BLE",
-		Rssi:      -50,
-		Snr:       10,
+		Type:      "SERIAL",
 		Mac:       "00:11:22:33:44:55",
-		Message:   "Hello, World!",
+		Message:   "Hello, Serial!",
 	}
 
 	serialData = append(serialData, data)
