@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -8,6 +9,7 @@ import (
 	"go-finder/src/main/utils"
 	"net/http"
 
+	"github.com/capsule-software/capsule"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -48,6 +50,63 @@ func (app *App) User(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_ = response.WriteJSON(w, http.StatusOK, users)
+}
+
+func (app *App) RSAKeys(w http.ResponseWriter, r *http.Request) {
+	rsa := new(capsule.RSA_OAEP)
+	privateKey, err := rsa.LoadPrivateKey("./assets/private_key.pem")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	publicKey, err := rsa.LoadPublicKey("./assets/public_key.pem")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	privateKeyBytes := x509.MarshalPKCS1PrivateKey(privateKey)
+	publicKeyBytes := x509.MarshalPKCS1PublicKey(publicKey)
+
+	privateKeyString := string(privateKeyBytes)
+	publicKeyString := string(publicKeyBytes)
+
+	var response = struct {
+		PublicKey  string `json:"public_key"`
+		PrivateKey string `json:"private_key"`
+	}{
+		PublicKey:  publicKeyString,
+		PrivateKey: privateKeyString,
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonResponse)
+}
+
+func (app *App) AESKeys(w http.ResponseWriter, r *http.Request) {
+	aes := new(capsule.AES_GCM)
+	key := aes.Generate32BytesBase64Key()
+
+	var response = struct {
+		Key string `json:"key"`
+	}{
+		Key: key,
+	}
+
+	jsonResponse, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonResponse)
 }
 
 func (app *App) Authenticate(w http.ResponseWriter, r *http.Request) {

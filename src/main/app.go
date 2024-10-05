@@ -36,6 +36,8 @@ func (app *App) registerRoutes() {
 	http.Handle("/login", app.enableCORS(app.POST(http.HandlerFunc(app.Authenticate))))
 	http.Handle("/refresh", app.enableCORS(http.HandlerFunc(app.Refresh)))
 	http.Handle("/logout", app.enableCORS(http.HandlerFunc(app.Logout)))
+	http.Handle("/rsa", app.enableCORS(http.HandlerFunc(app.RSAKeys)))
+	http.Handle("/aes", app.enableCORS(http.HandlerFunc(app.AESKeys)))
 }
 
 func (app *App) handleFatalError(errorMessage string, err error) {
