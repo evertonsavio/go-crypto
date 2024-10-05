@@ -32,13 +32,10 @@ func (app *App) start() error {
 
 func (app *App) registerRoutes() {
 	http.Handle("/", app.enableCORS(app.AuthRequired(app.GET(http.HandlerFunc(Home)))))
-	http.Handle("/serial", app.enableCORS(http.HandlerFunc(Serial)))
 	http.Handle("/user", app.enableCORS(http.HandlerFunc(app.User)))
 	http.Handle("/login", app.enableCORS(app.POST(http.HandlerFunc(app.Authenticate))))
 	http.Handle("/refresh", app.enableCORS(http.HandlerFunc(app.Refresh)))
 	http.Handle("/logout", app.enableCORS(http.HandlerFunc(app.Logout)))
-	http.Handle("/rsa", app.enableCORS(http.HandlerFunc(app.RSA)))
-	http.Handle("/aes", app.enableCORS(http.HandlerFunc(app.AES)))
 }
 
 func (app *App) handleFatalError(errorMessage string, err error) {
